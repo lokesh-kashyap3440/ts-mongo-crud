@@ -16,7 +16,7 @@ export const initSocket = (httpServer: HttpServer) => {
     
     socket.on('join-admin', () => {
       socket.join('admin-room');
-      console.log(`👤 User ${socket.id} joined admin room`);
+      console.log(`👤 User ${socket.id} successfully joined admin-room`);
     });
 
     socket.on('disconnect', () => {
@@ -36,6 +36,9 @@ export const getIO = () => {
 
 export const notifyAdmin = (data: any) => {
   if (io) {
+    console.log('📢 Emitting notification to admin-room:', data.message);
     io.to('admin-room').emit('notification', data);
+  } else {
+    console.warn('⚠️ Socket.io not initialized, cannot notify admin');
   }
 };
