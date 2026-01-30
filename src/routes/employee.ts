@@ -259,6 +259,17 @@ router.put('/:id', authenticateToken as any, async (req: AuthRequest, res: Respo
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: 'Employee not found' });
     }
+
+    // Notify admin
+    if (req.user?.role !== 'admin') {
+      notifyAdmin({
+        type: 'EMPLOYEE_UPDATED',
+        message: `Employee "${updates.name || id}" was updated by ${req.user?.username}`,
+        data: { id, updates },
+        timestamp: new Date()
+      });
+    }
+
     res.json({ modifiedCount: result.modifiedCount });
   } catch (error) {
     console.error('Error updating employee:', error);
@@ -315,6 +326,17 @@ router.delete('/:id', authenticateToken as any, async (req: AuthRequest, res: Re
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Employee not found' });
     }
+
+    // Notify admin
+    if (req.user?.role !== 'admin') {
+      notifyAdmin({
+        type: 'EMPLOYEE_DELETED',
+        message: `An employee was deleted by ${req.user?.username}`,
+        data: { id },
+        timestamp: new Date()
+      });
+    }
+
     res.json({ deletedCount: result.deletedCount });
   } catch (error) {
     console.error('Error deleting employee:', error);
