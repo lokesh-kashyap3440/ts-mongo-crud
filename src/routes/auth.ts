@@ -5,8 +5,77 @@ import jwt from 'jsonwebtoken';
 import { getDb } from '../db.ts';
 import type { User } from '../models/user.ts';
 
+import { authenticateToken } from '../middleware/auth.ts';
+import type { AuthRequest } from '../middleware/auth.ts';
+
 const router = Router();
 const collectionName = 'users';
+
+/**
+ * @swagger
+ * /auth/change-password:
+ *   put:
+ *     summary: Change user password
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - oldPassword
+ *               - newPassword
+ *             properties:
+ *               oldPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *       400:
+ *         description: Invalid old password
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.put('/change-password', authenticateToken as any, async (req: AuthRequest, res: Response) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const username = req.user?.username;
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).send('Old and new passwords are required');
+    }
+
+    const db = getDb();
+    const user = await db.collection<User>(collectionName).findOne({ username });
+
+    if (!user) {
+      return res.status(401).send('User not found');
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password || '');
+    if (!isMatch) {
+      return res.status(400).send('Invalid old password');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await db.collection(collectionName).updateOne(
+      { username },
+      { $set: { password: hashedPassword } }
+    );
+
+    res.send('Password changed successfully');
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).send('Error changing password');
+  }
+});
 
 /**
  * @swagger
