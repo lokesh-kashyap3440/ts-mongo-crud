@@ -13,6 +13,14 @@ A TypeScript-based Express API for managing employees with JWT authentication an
 - **Swagger Documentation**: Interactive API documentation available at `/api-docs`.
 - **Automatic Timestamps**: Tracks `createdAt` and `updatedAt` for all records.
 - **Sorting**: Employees are sorted by last updated date by default.
+- **Real-time Notifications**: Integrated Socket.io to notify admin users of any employee-related actions (create, update, delete) performed by regular users.
+
+## Real-time Notifications (Socket.io)
+
+The backend uses WebSockets to provide instant feedback to admin users:
+- **Room Joining**: Users with the `admin` role automatically join a protected `admin-room`.
+- **Event Emission**: The server emits a `notification` event whenever a regular user performs a write operation on the employee collection.
+- **Payload**: Includes the action type, a descriptive message, the affected data, and a timestamp.
 
 ## Prerequisites
 
