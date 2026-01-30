@@ -12,8 +12,12 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000',
-        description: 'Local server',
+        url: process.env.SERVER_URL || 'http://localhost:3000',
+        description: 'Dynamic server',
+      },
+      {
+        url: '/',
+        description: 'Relative path',
       },
     ],
     components: {
@@ -38,5 +42,5 @@ const specs = swaggerJsdoc(options);
 
 export const setupSwagger = (app: Express) => {
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
-  console.log('📄 Swagger documentation available at http://localhost:3000/api-docs');
+  console.log('📄 Swagger documentation available at /api-docs');
 };
