@@ -1,8 +1,14 @@
 import 'dotenv/config';
+import { createServer } from 'http';
 import { connectToDatabase } from './db.ts';
 import app from './app.ts';
+import { initSocket } from './socket.ts';
 
 const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+const httpServer = createServer(app);
+
+// Initialize Socket.io
+initSocket(httpServer);
 
 async function startServer() {
   try {
@@ -10,7 +16,7 @@ async function startServer() {
     await connectToDatabase(mongoUri);
     console.log('✅ MongoDB connection established');
 
-    app.listen(port, () => {
+    httpServer.listen(port, () => {
       console.log(`🚀 Server listening at http://localhost:${port}`);
     });
   } catch (error) {

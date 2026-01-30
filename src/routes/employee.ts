@@ -5,6 +5,7 @@ import { getDb } from '../db.ts';
 import type { Employee } from '../models/employee.ts';
 import { authenticateToken } from '../middleware/auth.ts';
 import type { AuthRequest } from '../middleware/auth.ts';
+import { notifyAdmin } from '../socket.ts';
 
 const router = Router();
 const collectionName = 'employees';
@@ -95,6 +96,17 @@ router.post('/', authenticateToken as any, async (req: AuthRequest, res: Respons
     const result = await getDb()
       .collection(collectionName)
       .insertOne(employee as any);
+
+    // Notify admin if the creator is not the admin themselves
+    if (req.user?.role !== 'admin') {
+      notifyAdmin({
+        type: 'EMPLOYEE_ADDED',
+        message: `New employee "${employee.name}" added by ${req.user?.username}`,
+        data: employee,
+        timestamp: new Date()
+      });
+    }
+
     res.status(201).json({ insertedId: result.insertedId });
   } catch (error) {
     console.error('Error creating employee:', error);
