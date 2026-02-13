@@ -24,7 +24,7 @@ app.get('/health', (_req: Request, res: Response) => {
 // Connect to MongoDB and start server
 async function startServer() {
   try {
-const mongoUri = process.env.MONGODB_URI || 'mongodb://root:example@localhost:27017';
+const mongoUri = process.env.MONGODB_URI || 'mongodb://root:example@host.docker.internal:27017';
     await connectToDatabase(mongoUri);
     console.log('✅ MongoDB connection established');
 
